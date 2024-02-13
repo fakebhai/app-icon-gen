@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install app-icon-generator
-        run: npm install -g app-icon-generator
+        run: npm install -g https://github.com/dwmkerr/app-icon
       - name: Create icons directory
         run: mkdir icons
       - name: Generate app icons
