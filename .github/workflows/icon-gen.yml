@@ -13,16 +13,35 @@ jobs:
   generate-icons:
     runs-on: ubuntu-latest
     steps:
-      - name: Install app-icon-generator
-        run: npm install -g https://github.com/dwmkerr/app-icon
-      - name: Create icons directory
-        run: mkdir icons
-      - name: Generate app icons
-        run: app-icon-generator icon android ${{ github.event.inputs.image_link }} icons
-      - name: Zip icons directory
-        run: zip -r icons.zip icons
-      - name: Upload icons.zip as artifact
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install ImageMagick
+        run: sudo apt-get install imagemagick
+      - name: Generate ic_launcher.png and ic_launcher_round.png
+        run: |
+          wget ${{ github.event.inputs.image_link }} -O icon.png
+          convert icon.png -resize 512x512 ic_launcher.png
+          convert icon.png -resize 512x512 -alpha set -background none -gravity center -extent 512x512 -distort DePolar 0 -virtual-pixel HorizontalTile -distort Polar 0 -trim +repage ic_launcher_round.png
+      - name: Generate mipmap folders
+        run: |
+          mkdir -p res/mipmap-hdpi res/mipmap-mdpi res/mipmap-xhdpi res/mipmap-xxhdpi res/mipmap-xxxhdpi
+      - name: Generate mipmap icons
+        run: |
+          convert ic_launcher.png -resize 72x72 res/mipmap-hdpi/ic_launcher.png
+          convert ic_launcher.png -resize 48x48 res/mipmap-mdpi/ic_launcher.png
+          convert ic_launcher.png -resize 96x96 res/mipmap-xhdpi/ic_launcher.png
+          convert ic_launcher.png -resize 144x144 res/mipmap-xxhdpi/ic_launcher.png
+          convert ic_launcher.png -resize 192x192 res/mipmap-xxxhdpi/ic_launcher.png
+          convert ic_launcher_round.png -resize 72x72 res/mipmap-hdpi/ic_launcher_round.png
+          convert ic_launcher_round.png -resize 48x48 res/mipmap-mdpi/ic_launcher_round.png
+          convert ic_launcher_round.png -resize 96x96 res/mipmap-xhdpi/ic_launcher_round.png
+          convert ic_launcher_round.png -resize 144x144 res/mipmap-xxhdpi/ic_launcher_round.png
+          convert ic_launcher_round.png -resize 192x192 res/mipmap-xxxhdpi/ic_launcher_round.png
+      - name: Zip the res folder
+        run: zip -r res.zip res
+      - name: Upload the res.zip as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: icons
-          path: icons.zip
+          name: res.zip
+          path: res.zip
+
