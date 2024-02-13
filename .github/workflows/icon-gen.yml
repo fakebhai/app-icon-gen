@@ -1,0 +1,28 @@
+
+
+name: Generate App Icons
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_link:
+        description: 'The link of the image to use as the app icon'
+        required: true
+
+jobs:
+  generate-icons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install app-icon-generator
+        run: npm install -g app-icon-generator
+      - name: Create icons directory
+        run: mkdir icons
+      - name: Generate app icons
+        run: app-icon-generator icon android ${{ github.event.inputs.image_link }} icons
+      - name: Zip icons directory
+        run: zip -r icons.zip icons
+      - name: Upload icons.zip as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: icons
+          path: icons.zip
